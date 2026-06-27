@@ -1,6 +1,6 @@
-# 📅 To-Do Calendar App
+# � Taskflow — Todo Calendar App
 
-A full-stack To-Do List & Calendar Web Application where authenticated users can manage daily tasks via an interactive calendar interface.
+A full-stack To-Do List & Calendar Web Application where authenticated users can manage daily tasks via an interactive calendar interface. Features a drag-and-drop Kanban board, modern frosted-glass UI, and 31 demo tasks across the year.
 
 ## Tech Stack
 
@@ -14,6 +14,7 @@ A full-stack To-Do List & Calendar Web Application where authenticated users can
 | Validation | Zod |
 | Data Fetching | React Query (TanStack Query v5) |
 | Calendar UI | react-calendar v5 |
+| Drag & Drop | @dnd-kit/core + @dnd-kit/sortable |
 | Testing | Jest + React Testing Library |
 | Containerization | Docker + docker-compose |
 | CI/CD | GitHub Actions |
@@ -26,6 +27,7 @@ A full-stack To-Do List & Calendar Web Application where authenticated users can
 - ✅ Full CRUD on tasks (title, description, date, status)
 - ✅ Dashboard: calendar + **all tasks** grouped by date + status summary
 - ✅ Tasks scoped to authenticated user only
+- ✅ Kanban board with drag-and-drop between Not Started / In Progress / Done columns
 - ✅ Search across all tasks by title/description
 
 ### Bonus
@@ -125,6 +127,8 @@ Register at `/register`, or use the seeded account:
 │   ├── TaskCalendar.tsx
 │   ├── TaskCard.tsx
 │   ├── TaskModal.tsx
+│   ├── TaskBoard.tsx                     # Kanban board with drag-and-drop
+│   ├── SortableTaskCard.tsx              # Draggable card component
 │   ├── StatusSummary.tsx
 │   ├── DeleteConfirmDialog.tsx
 │   ├── providers.tsx
