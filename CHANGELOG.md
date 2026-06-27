@@ -128,3 +128,15 @@
 - Created `TaskBoard` component (3-column DndContext with SortableContext per column)
 - Created `SortableTaskCard` component (useSortable hook, CSS transform transitions)
 - Pointer sensor with 5px activation distance prevents accidental drags on click
+
+### Modern SaaS UI Refactor (2026-06-28)
+- **Design System**: Established a comprehensive custom design system in `globals.css` with a new Indigo/Violet color palette, 8px spacing grid, semantic variables, and keyframe animations (`fadeIn`, `scaleIn`, `slideUp`).
+- **Landing Page**: Completely redesigned with an animated gradient mesh background, clear value propositions (Kanban, Status Tracking), and strong CTA hierarchy.
+- **Navigation**: Upgraded to a frosted glass layout (`backdrop-blur`), featuring a custom SVG logo, user initials avatar pill, and animated Sun/Moon toggle for dark mode.
+- **Auth Pages**: Transformed basic forms into split-screen layouts featuring a prominent brand panel. Added inline button spinners, a live password strength meter, and an animated error banner.
+- **Dashboard Layout**: Introduced a sticky left sidebar on large screens, improving navigation on dense lists. Task lists are now grouped with human-readable relative dates ("Today", "Yesterday").
+- **Task Cards**: Implemented a more compact design with icon-only action buttons (pencil/trash) that reveal on hover, reducing visual clutter. Added subtle hover elevation.
+- **Board View**: Refined Kanban column aesthetics by reducing background heaviness and adding semantic SVG icons (circle, clock, checkmark). Added a dashed dropzone for empty columns.
+- **Status Summary**: Elevated the component to feature a prominent completion percentage headline, alongside a stacked RGB progress bar and detailed legend rows.
+- **Modals & Dialogs**: Replaced abrupt overlays with frosted glass backdrops and 150ms scale-in animations for a much smoother user experience.
+- **Loading States**: Replaced plain spinners with page-level skeleton shimmer animations for better perceived performance.

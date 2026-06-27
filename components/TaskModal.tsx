@@ -12,6 +12,28 @@ interface TaskModalProps {
   defaultDate: string; // YYYY-MM-DD
 }
 
+function XIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4" aria-hidden="true">
+      <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+    </svg>
+  );
+}
+
+function AlertIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 flex-shrink-0" aria-hidden="true">
+      <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
+  { value: "NOT_STARTED", label: "Not Started" },
+  { value: "IN_PROGRESS", label: "In Progress" },
+  { value: "DONE",        label: "Done" },
+];
+
 export default function TaskModal({
   isOpen,
   onClose,
@@ -61,32 +83,58 @@ export default function TaskModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {isEditing ? "Edit Task" : "New Task"}
-          </h2>
+    <div
+      className="modal-backdrop"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="task-modal-title"
+    >
+      <div className="modal-panel w-full max-w-md">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
+          <div>
+            <h2
+              id="task-modal-title"
+              className="text-base font-bold text-slate-900 dark:text-white"
+            >
+              {isEditing ? "Edit Task" : "New Task"}
+            </h2>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+              {isEditing
+                ? "Update the task details below"
+                : "Fill in the details to create a task"}
+            </p>
+          </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="btn-icon ml-4"
+            aria-label="Close modal"
           >
-            ✕
+            <XIcon />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
           {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-400">
+            <div
+              role="alert"
+              className="flex items-center gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 animate-slide-up dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
+            >
+              <AlertIcon />
               {error}
             </div>
           )}
 
+          {/* Title */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Title *
+            <label htmlFor="task-title" className="input-label">
+              Title <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>
             </label>
             <input
+              id="task-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -94,69 +142,92 @@ export default function TaskModal({
               placeholder="What do you need to do?"
               required
               maxLength={200}
+              autoFocus={!isEditing}
             />
           </div>
 
+          {/* Description */}
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Description
+            <label htmlFor="task-description" className="input-label">
+              Description{" "}
+              <span className="text-xs text-slate-400 font-normal">(optional)</span>
             </label>
             <textarea
+              id="task-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="input-field min-h-20 resize-y"
-              placeholder="Add details (optional)"
+              placeholder="Add details or context…"
               maxLength={1000}
             />
           </div>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Date
-            </label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="input-field"
-              required
-              aria-label="Task date"
-            />
-          </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Status
-            </label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as TaskStatus)}
-              className="input-field"
-              aria-label="Task status"
-            >
-              <option value="NOT_STARTED">Not Started</option>
-              <option value="IN_PROGRESS">In Progress</option>
-              <option value="DONE">Done</option>
-            </select>
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-secondary flex-1"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary flex-1"
-            >
-              {loading ? "Saving..." : isEditing ? "Update" : "Create"}
-            </button>
+          {/* Date + Status in a row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="task-date" className="input-label">
+                Date
+              </label>
+              <input
+                id="task-date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="input-field"
+                required
+                aria-label="Task date"
+              />
+            </div>
+            <div>
+              <label htmlFor="task-status" className="input-label">
+                Status
+              </label>
+              <select
+                id="task-status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value as TaskStatus)}
+                className="input-field"
+                aria-label="Task status"
+              >
+                {STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </form>
+
+        {/* Footer */}
+        <div className="flex gap-3 px-6 py-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 rounded-b-2xl">
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn-secondary flex-1"
+            disabled={loading}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form=""
+            onClick={handleSubmit}
+            disabled={loading}
+            className="btn-primary flex-1"
+          >
+            {loading ? (
+              <>
+                <span className="spinner" />
+                Saving…
+              </>
+            ) : isEditing ? (
+              "Save changes"
+            ) : (
+              "Create task"
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

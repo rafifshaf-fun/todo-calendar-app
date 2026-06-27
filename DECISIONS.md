@@ -153,6 +153,22 @@ This keeps the production image small (~200MB vs ~800MB if devDependencies were 
 **Decision:** Add a 📋 List / 📌 Board toggle in the task panel header instead of a separate route.
 **Why:** Both views share the same data (all tasks), search/filter controls, and CRUD modals. A toggle keeps the user on one page without losing calendar context or filter state. The board is rendered conditionally (`viewMode === "board"`) with no additional data fetching — it reuses the same `tasks` array already sorted and filtered. This avoids duplicating the search, status filter, and mutation logic across two pages.
 
+### Modern SaaS Aesthetic over Minimal Viable Product (2026-06-28)
+**Decision:** Overhaul the entire visual presentation to match a modern, premium SaaS product while preserving all underlying business logic.
+**Why:** The previous MVP design was functional but lacked polish (e.g., plain blue colors, no loading states, abrupt modals, cluttered cards). A premium design system with an indigo/violet palette, 8px spacing grid, and fluid micro-animations (150-250ms) improves user trust and engagement.
+
+### Skeleton Loading over Plain Spinners
+**Decision:** Use CSS-animated skeleton shimmers (`animate-shimmer`) for the initial dashboard load instead of a single centered spinner.
+**Why:** Skeleton screens reduce perceived loading time by providing a visual placeholder of the content layout. This prevents layout shift and makes the app feel faster and more robust.
+
+### Frosted Glass Modals & Nav over Solid Backgrounds
+**Decision:** Use Tailwind's `backdrop-blur` utilities with semi-transparent backgrounds for the Navbar and Modal overlays.
+**Why:** Glassmorphism establishes a clear visual hierarchy by softly obscuring background content while keeping context alive. It feels significantly more modern than solid `#000000` opacities.
+
+### CSS Custom Properties for Design Tokens
+**Decision:** Define semantic tokens (e.g., `--color-primary-600`) and keyframe animations in `@theme` and `@layer utilities` within `globals.css` rather than purely relying on Tailwind utility classes inline.
+**Why:** Tailwind 4 encourages this CSS-first approach. It centralized the visual language, allowed for complex animations (`scaleIn`, `slideUp`), and enabled complete, non-conflicting overriding of the `react-calendar` default styles without `!important` wars against library CSS.
+
 ---
 
 ## Known Trade-offs (Updated)

@@ -14,6 +14,8 @@ import StatusSummary from "@/components/StatusSummary";
 import { TaskResponse, TaskCreateInput, TaskUpdateInput, TaskStatus } from "@/types";
 import { formatDate } from "@/lib/utils";
 
+/* ─── Data Fetching ─────────────────────────────────────────── */
+
 async function fetchAllTasks(status?: string, search?: string): Promise<TaskResponse[]> {
   const params = new URLSearchParams();
   if (status) params.set("status", status);
@@ -26,6 +28,108 @@ async function fetchAllTasks(status?: string, search?: string): Promise<TaskResp
   }
   return res.json();
 }
+
+/* ─── Helpers ───────────────────────────────────────────────── */
+
+/** Human-friendly date heading: "Today", "Yesterday", "Mon, Jun 27" */
+function friendlyDateHeading(dateStr: string): { label: string; isToday: boolean } {
+  const today = new Date();
+  const todayStr = formatDate(today);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = formatDate(yesterday);
+
+  if (dateStr === todayStr) return { label: "Today", isToday: true };
+  if (dateStr === yesterdayStr) return { label: "Yesterday", isToday: false };
+
+  const d = new Date(dateStr + "T00:00:00");
+  return {
+    label: d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
+    isToday: false,
+  };
+}
+
+/* ─── Skeleton Components ───────────────────────────────────── */
+
+function SkeletonCard() {
+  return (
+    <div className="card space-y-3">
+      <div className="flex items-start justify-between">
+        <div className="skeleton h-4 w-3/4 rounded-lg" />
+        <div className="skeleton h-5 w-16 rounded-full" />
+      </div>
+      <div className="skeleton h-3 w-full rounded-lg" />
+      <div className="skeleton h-3 w-2/3 rounded-lg" />
+      <div className="skeleton h-3 w-16 rounded-lg" />
+    </div>
+  );
+}
+
+function SkeletonGroup() {
+  return (
+    <div className="space-y-3">
+      <div className="skeleton h-3 w-24 rounded-full" />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <SkeletonCard />
+        <SkeletonCard />
+      </div>
+    </div>
+  );
+}
+
+/* ─── SVG Icons ─────────────────────────────────────────────── */
+
+function ListIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill={active ? "white" : "currentColor"}
+      className="w-3.5 h-3.5"
+      aria-hidden="true"
+    >
+      <path d="M2 4.75a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 3.5a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H2.75A.75.75 0 012 8.25zm0 3.5a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H2.75a.75.75 0 01-.75-.75z" />
+    </svg>
+  );
+}
+
+function BoardIcon({ active }: { active: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill={active ? "white" : "currentColor"}
+      className="w-3.5 h-3.5"
+      aria-hidden="true"
+    >
+      <path d="M2.5 1A1.5 1.5 0 001 2.5v11A1.5 1.5 0 002.5 15h3A1.5 1.5 0 007 13.5v-11A1.5 1.5 0 005.5 1h-3zm4 0A1.5 1.5 0 005 2.5v7A1.5 1.5 0 006.5 11h3A1.5 1.5 0 0011 9.5v-7A1.5 1.5 0 009.5 1h-3zm4 0A1.5 1.5 0 009 2.5v4A1.5 1.5 0 0010.5 8h3A1.5 1.5 0 0015 6.5v-4A1.5 1.5 0 0013.5 1h-3z" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 text-slate-400" aria-hidden="true">
+      <path fillRule="evenodd" d="M9.965 11.026a5 5 0 111.06-1.06l2.755 2.754a.75.75 0 11-1.06 1.06l-2.755-2.754zM10.5 7a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4" aria-hidden="true">
+      <path d="M8.75 3.75a.75.75 0 00-1.5 0v3.5h-3.5a.75.75 0 000 1.5h3.5v3.5a.75.75 0 001.5 0v-3.5h3.5a.75.75 0 000-1.5h-3.5v-3.5z" />
+    </svg>
+  );
+}
+
+function ErrorIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="currentColor" className="w-10 h-10 text-red-400" aria-hidden="true">
+      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+/* ─── Dashboard Page ────────────────────────────────────────── */
 
 export default function DashboardPage() {
   const { data: session, status: authStatus } = useSession();
@@ -81,7 +185,8 @@ export default function DashboardPage() {
     [allTasks]
   );
 
-  // Create task mutation
+  // ── Mutations ──────────────────────────────────────────────
+
   const createMutation = useMutation({
     mutationFn: async (data: TaskCreateInput) => {
       const res = await fetch("/api/tasks", {
@@ -100,7 +205,6 @@ export default function DashboardPage() {
     },
   });
 
-  // Update task mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: TaskUpdateInput }) => {
       const res = await fetch(`/api/tasks/${id}`, {
@@ -119,7 +223,6 @@ export default function DashboardPage() {
     },
   });
 
-  // Delete task mutation
   const deleteMutation = useMutation({
     mutationFn: async (taskId: string) => {
       const res = await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
@@ -134,6 +237,8 @@ export default function DashboardPage() {
     },
   });
 
+  // ── Handlers ───────────────────────────────────────────────
+
   const handleCreateTask = useCallback(() => {
     setEditingTask(null);
     setIsModalOpen(true);
@@ -144,10 +249,13 @@ export default function DashboardPage() {
     setIsModalOpen(true);
   }, []);
 
-  const handleDeleteTask = useCallback((taskId: string) => {
-    const task = tasks.find((t) => t.id === taskId);
-    if (task) setDeletingTask(task);
-  }, [tasks]);
+  const handleDeleteTask = useCallback(
+    (taskId: string) => {
+      const task = tasks.find((t) => t.id === taskId);
+      if (task) setDeletingTask(task);
+    },
+    [tasks]
+  );
 
   const handleModalSubmit = useCallback(
     async (data: TaskCreateInput | TaskUpdateInput) => {
@@ -173,7 +281,8 @@ export default function DashboardPage() {
     }
   }, [deletingTask, deleteMutation]);
 
-  // Compute status counts across ALL tasks
+  // ── Computed ───────────────────────────────────────────────
+
   const statusCounts = useMemo(
     () => ({
       notStarted: tasks.filter((t) => t.status === "NOT_STARTED").length,
@@ -183,22 +292,30 @@ export default function DashboardPage() {
     [tasks]
   );
 
+  // ── Auth loading ───────────────────────────────────────────
+
   if (authStatus === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-[#0b0f1a]">
+        <div className="text-center space-y-3">
+          <div className="mx-auto h-10 w-10 rounded-full border-2 border-primary-600 border-t-transparent animate-spin" />
+          <p className="text-sm text-slate-400">Loading…</p>
+        </div>
       </div>
     );
   }
 
+  // ── Render ─────────────────────────────────────────────────
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f1a]">
       <Navbar />
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Left column: Calendar + Status */}
-          <div className="space-y-6 lg:col-span-1">
+        <div className="flex gap-6 lg:items-start">
+
+          {/* ── Left Sidebar (sticky) ── */}
+          <aside className="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 flex-shrink-0 gap-4 sticky top-[73px]">
             <TaskCalendar
               selectedDate={selectedDate}
               onDateChange={setSelectedDate}
@@ -207,55 +324,107 @@ export default function DashboardPage() {
 
             <StatusSummary counts={statusCounts} />
 
-            <button onClick={handleCreateTask} className="btn-primary w-full">
-              + Add Task
+            <button
+              id="add-task-sidebar"
+              onClick={handleCreateTask}
+              className="btn-primary w-full py-2.5"
+            >
+              <PlusIcon />
+              New Task
             </button>
-          </div>
+          </aside>
 
-          {/* Right column: Task list */}
-          <div className="lg:col-span-2">
-            <div className="card">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  All Tasks
-                </h2>
+          {/* ── Main Content ── */}
+          <div className="flex-1 min-w-0 space-y-4">
 
-                <div className="flex items-center gap-2">
+            {/* Mobile: calendar + add button row */}
+            <div className="lg:hidden space-y-4">
+              <TaskCalendar
+                selectedDate={selectedDate}
+                onDateChange={setSelectedDate}
+                taskDates={taskDates}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <StatusSummary counts={statusCounts} />
+                <button
+                  onClick={handleCreateTask}
+                  className="btn-primary h-fit self-end py-2.5"
+                >
+                  <PlusIcon />
+                  New Task
+                </button>
+              </div>
+            </div>
+
+            {/* Task Panel */}
+            <div className="card p-0 overflow-hidden">
+
+              {/* Panel Header */}
+              <div className="flex flex-col gap-3 px-5 py-4 border-b border-slate-100 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-3">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                    All Tasks
+                  </h2>
+                  {!isLoading && (
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                      {tasks.length}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
                   {/* View toggle */}
-                  <div className="flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+                  <div className="flex rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-50 dark:bg-slate-800 p-0.5 gap-0.5">
                     <button
+                      id="view-list"
                       onClick={() => setViewMode("list")}
-                      className={`px-3 py-1 text-xs font-medium transition-colors ${
+                      aria-pressed={viewMode === "list"}
+                      className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-150 ${
                         viewMode === "list"
-                          ? "bg-primary-600 text-white"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          ? "bg-primary-600 text-white shadow-sm"
+                          : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                       }`}
                     >
-                      📋 List
+                      <ListIcon active={viewMode === "list"} />
+                      List
                     </button>
                     <button
+                      id="view-board"
                       onClick={() => setViewMode("board")}
-                      className={`px-3 py-1 text-xs font-medium transition-colors ${
+                      aria-pressed={viewMode === "board"}
+                      className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-150 ${
                         viewMode === "board"
-                          ? "bg-primary-600 text-white"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          ? "bg-primary-600 text-white shadow-sm"
+                          : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                       }`}
                     >
-                      📌 Board
+                      <BoardIcon active={viewMode === "board"} />
+                      Board
                     </button>
                   </div>
 
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search tasks..."
-                    className="input-field sm:w-48"
-                  />
+                  {/* Search */}
+                  <div className="relative">
+                    <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2">
+                      <SearchIcon />
+                    </div>
+                    <input
+                      type="text"
+                      id="search-tasks"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search tasks…"
+                      className="input-field pl-9 sm:w-44"
+                      aria-label="Search tasks"
+                    />
+                  </div>
+
+                  {/* Status filter */}
                   <select
+                    id="status-filter"
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="input-field sm:w-40"
+                    className="input-field sm:w-36"
                     aria-label="Filter by status"
                   >
                     <option value="">All Status</option>
@@ -263,29 +432,64 @@ export default function DashboardPage() {
                     <option value="IN_PROGRESS">In Progress</option>
                     <option value="DONE">Done</option>
                   </select>
+
+                  {/* Add button (panel header — desktop supplement) */}
+                  <button
+                    id="add-task-header"
+                    onClick={handleCreateTask}
+                    className="btn-primary py-2 px-4 text-xs hidden sm:flex"
+                    aria-label="Add new task"
+                  >
+                    <PlusIcon />
+                    New Task
+                  </button>
                 </div>
               </div>
 
-              {/* Task list / Board */}
-              <div className="mt-6">
+              {/* Panel Body */}
+              <div className="px-5 py-5">
                 {isLoading ? (
-                  <div className="flex justify-center py-12">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
+                  // Skeleton loading state
+                  <div className="space-y-6 animate-fade-in">
+                    <SkeletonGroup />
+                    <SkeletonGroup />
                   </div>
                 ) : error ? (
-                  <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-400">
-                    Failed to load tasks. Please try again.
+                  // Error state
+                  <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+                    <ErrorIcon />
+                    <p className="mt-3 font-semibold text-slate-700 dark:text-slate-300">
+                      Failed to load tasks
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      Please refresh the page and try again.
+                    </p>
                   </div>
                 ) : tasks.length === 0 ? (
-                  <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-                    <p className="text-4xl mb-3">📝</p>
-                    <p>No tasks yet.</p>
-                    <button
-                      onClick={handleCreateTask}
-                      className="mt-3 text-primary-600 hover:text-primary-500 font-medium text-sm"
-                    >
-                      + Add your first task
-                    </button>
+                  // Empty state
+                  <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-50 dark:bg-primary-900/20">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8 text-primary-400" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                      </svg>
+                    </div>
+                    <p className="font-semibold text-slate-700 dark:text-slate-300">
+                      {searchQuery || statusFilter ? "No matching tasks" : "No tasks yet"}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      {searchQuery || statusFilter
+                        ? "Try a different search or filter"
+                        : "Create your first task to get started"}
+                    </p>
+                    {!searchQuery && !statusFilter && (
+                      <button
+                        onClick={handleCreateTask}
+                        className="btn-primary mt-5 text-sm"
+                      >
+                        <PlusIcon />
+                        Create first task
+                      </button>
+                    )}
                   </div>
                 ) : viewMode === "board" ? (
                   <TaskBoard
@@ -298,13 +502,21 @@ export default function DashboardPage() {
                     onDragEnd={() => setDraggingTask(null)}
                   />
                 ) : (
+                  // List view — grouped by date
                   <div className="space-y-6">
+                    {/* Selected date group (pinned at top) */}
                     {selectedDateTasks.length > 0 && (
-                      <div>
-                        <h3 className="mb-3 text-sm font-semibold text-primary-600 uppercase tracking-wide">
-                          {dateStr} — Selected Date
-                        </h3>
-                        <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="animate-fade-in">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="date-heading-today">
+                            {friendlyDateHeading(dateStr).label}
+                          </span>
+                          <div className="h-px flex-1 bg-primary-100 dark:bg-primary-900/40" />
+                          <span className="text-xs text-primary-500 font-semibold">
+                            {selectedDateTasks.length}
+                          </span>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
                           {selectedDateTasks.map((task) => (
                             <TaskCard
                               key={task.id}
@@ -317,37 +529,47 @@ export default function DashboardPage() {
                       </div>
                     )}
 
-                    {/* All other tasks grouped by date */}
+                    {/* All other dates grouped */}
                     {(() => {
                       const tasksByDate = new Map<string, TaskResponse[]>();
                       tasks.forEach((t) => {
-                        if (t.date === dateStr) return; // Skip selected date (shown above)
+                        if (t.date === dateStr) return; // shown above
                         const group = tasksByDate.get(t.date) || [];
                         group.push(t);
                         tasksByDate.set(t.date, group);
                       });
 
-                      if (tasksByDate.size === 0 && selectedDateTasks.length === 0) return null;
+                      if (tasksByDate.size === 0 && selectedDateTasks.length === 0)
+                        return null;
 
                       const sortedDates = [...tasksByDate.keys()].sort().reverse();
 
-                      return sortedDates.map((date) => (
-                        <div key={date}>
-                          <h3 className="mb-3 text-sm font-semibold text-gray-500 uppercase tracking-wide">
-                            {date}
-                          </h3>
-                          <div className="grid gap-4 sm:grid-cols-2">
-                            {tasksByDate.get(date)!.map((task) => (
-                              <TaskCard
-                                key={task.id}
-                                task={task}
-                                onEdit={handleEditTask}
-                                onDelete={handleDeleteTask}
-                              />
-                            ))}
+                      return sortedDates.map((date) => {
+                        const { label } = friendlyDateHeading(date);
+                        const dateTasks = tasksByDate.get(date)!;
+
+                        return (
+                          <div key={date} className="animate-fade-in">
+                            <div className="flex items-center gap-3 mb-3">
+                              <span className="date-heading-other">{label}</span>
+                              <div className="h-px flex-1 bg-slate-100 dark:bg-slate-700/60" />
+                              <span className="text-xs text-slate-400 font-semibold">
+                                {dateTasks.length}
+                              </span>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              {dateTasks.map((task) => (
+                                <TaskCard
+                                  key={task.id}
+                                  task={task}
+                                  onEdit={handleEditTask}
+                                  onDelete={handleDeleteTask}
+                                />
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ));
+                        );
+                      });
                     })()}
                   </div>
                 )}
@@ -357,7 +579,7 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Task Modal */}
+      {/* Modals */}
       <TaskModal
         isOpen={isModalOpen}
         onClose={() => {
@@ -369,7 +591,6 @@ export default function DashboardPage() {
         defaultDate={dateStr}
       />
 
-      {/* Delete Confirmation */}
       <DeleteConfirmDialog
         isOpen={!!deletingTask}
         onClose={() => setDeletingTask(null)}

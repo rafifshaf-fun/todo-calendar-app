@@ -1,8 +1,8 @@
 "use client";
 
 import Calendar from "react-calendar";
-import "react-calendar/dist/Calendar.css";
 import { formatDate } from "@/lib/utils";
+// No library CSS import — all styles are in globals.css
 
 interface TaskCalendarProps {
   selectedDate: Date;
