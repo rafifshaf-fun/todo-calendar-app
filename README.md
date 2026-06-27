@@ -1,7 +1,16 @@
 # � Taskflow — Todo Calendar App
 
 A full-stack To-Do List & Calendar Web Application where authenticated users can manage daily tasks via an interactive calendar interface. Features a drag-and-drop Kanban board, modern frosted-glass UI, and 31 demo tasks across the year.
+## 🚀 Live Demo
 
+**https://taskflow-rho-roan.vercel.app**
+
+| Demo Account | |
+|---|---|
+| Email | `demo@example.com` |
+| Password | `password123` |
+
+> The demo account has **31 sample tasks** spanning January–December 2026 with realistic software development scenarios. Try the Kanban board drag-and-drop, search, and dark mode!
 ## Tech Stack
 
 | Layer | Technology |
@@ -98,12 +107,16 @@ docker-compose exec app npx prisma db push
 
 ### Demo Credentials
 
-Register at `/register`, or use the seeded account:
+**Live app:** https://taskflow-rho-roan.vercel.app
 
 | Field | Value |
 |---|---|
 | Email | `demo@example.com` |
 | Password | `password123` |
+
+The demo account has **31 sample tasks** across Jan–Dec 2026 (16 DONE, 5 IN_PROGRESS, 10 NOT_STARTED).
+
+### Deployment
 
 ## Project Structure
 

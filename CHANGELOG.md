@@ -1,5 +1,26 @@
 # CHANGELOG.md
 
+## 2026-06-28 — Production Deployment
+
+### Supabase + Vercel Deployment
+- Deployed app to Vercel at **https://taskflow-rho-roan.vercel.app**
+- Connected Supabase PostgreSQL via Vercel integration (`POSTGRES_PRISMA_URL`)
+- Created database schema via Supabase MCP: `TaskStatus` enum, `User` table, `Task` table
+- Seeded demo data: `demo@example.com` / `password123` with 31 tasks across Jan–Dec 2026
+- Set environment variables: `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_TRUST_HOST`
+
+### SSL/TLS Fix
+- Stripped `sslmode` from connection string to prevent conflict with manual SSL config
+- Added `ssl: { rejectUnauthorized: false }` to `pg.Pool` for Supabase self-signed certs
+
+### CI/CD Pipeline Fixes
+- **Lint**: Replaced `@eslint/eslintrc` FlatCompat with ESLint 9 flat config using `typescript-eslint`
+- **Lint**: Switched from deprecated `next lint` to `eslint .`
+- **Test**: Fixed `TaskCard` tests to use `getByTitle()` for icon-only buttons
+- **Type Check**: Removed unused `@ts-expect-error` directives in `jest.setup.ts`
+- **Build**: Added `pg` to `serverExternalPackages`
+- **All 4 CI jobs now pass**: Lint ✅, Type Check ✅, Test (20/20) ✅, Build ✅
+
 ## 2026-06-27 — Initial Project Setup
 
 ### Project Scaffolding

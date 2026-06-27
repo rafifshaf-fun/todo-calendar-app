@@ -190,3 +190,9 @@ This keeps the production image small (~200MB vs ~800MB if devDependencies were 
 5. **Docker host→container PostgreSQL auth:** On Docker Desktop for Windows, connecting from the host to the PostgreSQL container via `localhost:5432` fails with SCRAM auth errors even with trust configured. This is a known Docker Desktop Windows networking quirk. All database operations run inside Docker containers.
 
 6. **Manual DB schema creation:** Tables and enums were created via raw SQL rather than Prisma migrations. A future `prisma migrate dev` run in a proper development environment (with full Prisma CLI) would be needed to generate migration history files for production use.
+
+7. **Supabase + Vercel Deployment:** Chose Vercel for hosting (Next.js-native, git-push deploys, free tier) and Supabase for PostgreSQL (managed, free tier, Vercel integration auto-sets env vars). The Vercel-Supabase integration provides `POSTGRES_PRISMA_URL` specifically formatted for Prisma connections. TLS certificate validation (`self-signed certificate in certificate chain`) required stripping `sslmode` from the connection string and setting `ssl: { rejectUnauthorized: false }` on the `pg.Pool` — a common workaround for Supabase's SSL setup with the `pg` driver.
+
+8. **Seed via SQL over Prisma CLI:** The demo data was seeded via a raw SQL script (`tmp/seed-demo.sql`) run in the Supabase SQL Editor rather than Prisma's `seed.ts`. This avoids needing the full Prisma CLI in the production environment and works reliably across platforms.
+
+9. **ESLint 9 Flat Config over FlatCompat:** The auto-generated `@eslint/eslintrc` FlatCompat config caused circular JSON reference errors with ESLint 9. Replaced with a proper flat config using `typescript-eslint`, `eslint-plugin-react`, and `eslint-plugin-react-hooks`. Also switched from `next lint` (deprecated in Next.js 16) to `eslint .` directly.
