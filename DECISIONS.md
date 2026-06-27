@@ -153,7 +153,13 @@ This keeps the production image small (~200MB vs ~800MB if devDependencies were 
 **Decision:** Add a 📋 List / 📌 Board toggle in the task panel header instead of a separate route.
 **Why:** Both views share the same data (all tasks), search/filter controls, and CRUD modals. A toggle keeps the user on one page without losing calendar context or filter state. The board is rendered conditionally (`viewMode === "board"`) with no additional data fetching — it reuses the same `tasks` array already sorted and filtered. This avoids duplicating the search, status filter, and mutation logic across two pages.
 
-### Modern SaaS Aesthetic over Minimal Viable Product (2026-06-28)
+### Drag-and-Drop: Collision Detection — rectIntersection over closestCenter (2026-06-28)
+**Decision:** Switch the `DndContext` collision detection algorithm from `closestCenter` to `rectIntersection`.
+**Why:** `closestCenter` computes distances between the centers of all droppable elements. Since each card is both a sortable (draggable) and implicitly a droppable, and a card sits at the center of its own column, the dragged card's own center was always the nearest target. This caused `over.id` to equal `active.id` — the card was always "dropped on itself" and no status change occurred. `rectIntersection` checks whether the pointer coordinates fall within the bounding rectangle of any registered droppable. Empty column areas (registered via `useDroppable`) are now correctly detected because the pointer physically enters their rect when the card is dragged over them. The trade-off is that `rectIntersection` requires the droppable to have a non-zero area — columns are given `min-h-[160px]` to ensure this.
+
+### Seed Data: Expanded Demo Dataset (2026-06-28)
+**Decision:** Replace the 5-task seed script with 31 realistic tasks spanning January–December 2026, seeded via raw SQL.
+**Why:** A rich demo dataset lets evaluators immediately see the calendar dots across all months, test search/filter with meaningful results, and try drag-and-drop with multiple cards per column. Tasks follow a realistic software development timeline (sprints, CI migration, security audits, offsites) to demonstrate real-world use. Raw SQL was used over Prisma's `seed.ts` because the production Docker image lacks the full Prisma CLI environment, making raw SQL the reliably executable approach.
 **Decision:** Overhaul the entire visual presentation to match a modern, premium SaaS product while preserving all underlying business logic.
 **Why:** The previous MVP design was functional but lacked polish (e.g., plain blue colors, no loading states, abrupt modals, cluttered cards). A premium design system with an indigo/violet palette, 8px spacing grid, and fluid micro-animations (150-250ms) improves user trust and engagement.
 

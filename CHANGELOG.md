@@ -138,5 +138,20 @@
 - **Task Cards**: Implemented a more compact design with icon-only action buttons (pencil/trash) that reveal on hover, reducing visual clutter. Added subtle hover elevation.
 - **Board View**: Refined Kanban column aesthetics by reducing background heaviness and adding semantic SVG icons (circle, clock, checkmark). Added a dashed dropzone for empty columns.
 - **Status Summary**: Elevated the component to feature a prominent completion percentage headline, alongside a stacked RGB progress bar and detailed legend rows.
+
+### Drag & Drop Fix — Collision Detection (2026-06-28)
+- Fixed non-working drag-and-drop by switching collision detection from `closestCenter` to `rectIntersection`
+- Root cause: `closestCenter` always detected the dragged card itself as the nearest droppable (centered within its column), so `over.id` never resolved to a different target
+- `rectIntersection` checks if the pointer is physically within a droppable's bounding rectangle — empty column areas are correctly detected as drop targets
+- Added `DroppableColumn` component using `useDroppable` hook to register columns with dnd-kit
+- Columns highlight with an indigo ring (`ring-2 ring-indigo-400`) when a card is dragged over them
+- Added `useDroppable` and `rectIntersection` imports from `@dnd-kit/core`
+
+### Expanded Seed Data (2026-06-28)
+- Replaced 5-sample seed script with **31 realistic tasks** spanning January–December 2026
+- Tasks distributed across statuses: 16 DONE (historical), 5 IN_PROGRESS (current), 10 NOT_STARTED (future)
+- Task descriptions reflect real-world development workflows (sprints, CI migration, security audits, etc.)
+- Seed SQL file saved at `tmp/seed.sql` for reproducible database seeding
+- Calendar dots now appear across all 12 months of 2026
 - **Modals & Dialogs**: Replaced abrupt overlays with frosted glass backdrops and 150ms scale-in animations for a much smoother user experience.
 - **Loading States**: Replaced plain spinners with page-level skeleton shimmer animations for better perceived performance.
