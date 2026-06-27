@@ -155,3 +155,10 @@
 - Calendar dots now appear across all 12 months of 2026
 - **Modals & Dialogs**: Replaced abrupt overlays with frosted glass backdrops and 150ms scale-in animations for a much smoother user experience.
 - **Loading States**: Replaced plain spinners with page-level skeleton shimmer animations for better perceived performance.
+
+### CI/CD Pipeline Fixes (2026-06-28)
+- **Lint**: Replaced `@eslint/eslintrc` FlatCompat with ESLint 9 flat config using `typescript-eslint`, `eslint-plugin-react`, `eslint-plugin-react-hooks`. Switched lint script from deprecated `next lint` to `eslint .` (Next.js 16 removed `next lint` — it now interprets "lint" as a directory name). Added ignore patterns for `.venv`, config files, `prisma/`.
+- **Type Check**: Removed unused `@ts-expect-error` directives in `jest.setup.ts` — TypeScript no longer errors on `globalThis.Request/Response/Headers` polyfill assignments.
+- **Test**: Fixed `TaskCard` tests to use `screen.getByTitle("Edit")` / `screen.getByTitle("Delete")` instead of `screen.getByText("Edit")` / `screen.getByText("Delete")` — buttons are now icon-only (`title` attribute exposes text).
+- **CI Configuration**: Added `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `AUTH_TRUST_HOST` env vars to CI workflow for typecheck and build jobs. PostgreSQL service container for test job.
+- **All 4 CI jobs now pass**: Lint ✅, Type Check ✅, Test (20/20) ✅, Build ✅
