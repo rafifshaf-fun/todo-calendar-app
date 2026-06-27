@@ -3,7 +3,6 @@
 
 // Polyfill Request/Response for Next.js API route tests in jsdom
 if (typeof globalThis.Request === "undefined") {
-  // @ts-expect-error - Request polyfill for jsdom
   globalThis.Request = class {
     url: string;
     method: string;
@@ -25,7 +24,6 @@ if (typeof globalThis.Request === "undefined") {
 }
 
 if (typeof globalThis.Response === "undefined") {
-  // @ts-expect-error - Response polyfill for jsdom
   globalThis.Response = class {
     status: number;
     statusText: string;
@@ -44,7 +42,6 @@ if (typeof globalThis.Response === "undefined") {
 }
 
 if (typeof globalThis.Headers === "undefined") {
-  // @ts-expect-error - Headers polyfill for jsdom
   globalThis.Headers = class {
     private map = new Map<string, string>();
     constructor(init?: Record<string, string>) {
