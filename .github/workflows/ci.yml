@@ -22,6 +22,8 @@ jobs:
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "postgresql://user:password@localhost:5432/todoapp"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,6 +44,7 @@ jobs:
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
           POSTGRES_DB: todoapp_test
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-
@@ -67,6 +70,11 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "postgresql://user:password@localhost:5432/todoapp"
+      NEXTAUTH_SECRET: "build-secret-not-for-production"
+      NEXTAUTH_URL: "http://localhost:3000"
+      AUTH_TRUST_HOST: "true"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
