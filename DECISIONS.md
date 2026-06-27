@@ -145,6 +145,14 @@ This keeps the production image small (~200MB vs ~800MB if devDependencies were 
 **Decision:** Button text is simply "+ Add Task" instead of "+ Add Task for YYYY-MM-DD".
 **Why:** The task modal already has a date picker input, so appending the selected date to the button label was redundant and made the button unnecessarily wide. The modal defaults to today's date but the user can freely change it.
 
+### Drag-and-Drop: dnd-kit over HTML5 Drag API
+**Decision:** Use `@dnd-kit/core` + `@dnd-kit/sortable` for the Kanban board view.
+**Why:** `dnd-kit` is the most popular React drag-and-drop library with first-class TypeScript support, accessible keyboard interactions, and a declarative API. The HTML5 Drag API was rejected because it lacks touch support, has inconsistent browser behavior, and requires imperative DOM manipulation. The board replaces the need for a status dropdown on every card — users can visually organize tasks by dragging them between columns. The `PointerSensor` with a 5px activation distance prevents accidental drags when clicking Edit/Delete buttons. Each column is a `SortableContext` with `verticalListSortingStrategy`, and the `DndContext` wraps all three columns with `closestCenter` collision detection. Status changes call the existing `PUT /api/tasks/[id]` endpoint with `{ status: newStatus }`.
+
+### Board vs List: View Toggle over Separate Page
+**Decision:** Add a 📋 List / 📌 Board toggle in the task panel header instead of a separate route.
+**Why:** Both views share the same data (all tasks), search/filter controls, and CRUD modals. A toggle keeps the user on one page without losing calendar context or filter state. The board is rendered conditionally (`viewMode === "board"`) with no additional data fetching — it reuses the same `tasks` array already sorted and filtered. This avoids duplicating the search, status filter, and mutation logic across two pages.
+
 ---
 
 ## Known Trade-offs (Updated)
@@ -153,7 +161,7 @@ This keeps the production image small (~200MB vs ~800MB if devDependencies were 
 
 2. **No ORM-level Migrations in Production:** `prisma migrate deploy` must be run separately after deployment. Not handled in the Docker entrypoint. Acceptable for a demo/assignment but would need CI/CD integration for production.
 
-3. **Inline Styles for Progress Bars:** The `StatusSummary` component uses `style={{ width: `${percent}%` }}` because Tailwind cannot generate dynamic arbitrary widths at runtime. This triggers a lint warning but is the pragmatic solution.
+3. **Inline Styles for Progress Bars (Resolved):** The `StatusSummary` component originally used `style={{ width: \`${percent}%\` }}`. Fixed by using CSS custom properties: `style={{ '--progress-width': \`${percent}%\` }}` combined with a `w-progress` utility class (`width: var(--progress-width)`). This satisfies the linter while preserving dynamic behavior.
 
 4. **middleware.ts → proxy.ts:** Next.js 16 deprecates the `middleware` file convention in favor of `proxy`. The middleware was removed entirely due to Edge Runtime incompatibility with NextAuth v5. Future migration to `proxy.ts` with Node.js runtime could re-enable middleware-level auth.
 

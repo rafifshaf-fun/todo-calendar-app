@@ -116,3 +116,15 @@
 - Search now works across **all tasks** instead of being scoped to the selected date
 - Status filter applies to the full task list, not just a single day
 - Calendar still highlights dates with tasks and clicking a date scrolls to / highlights that date's group
+
+### Drag & Drop Board View (2026-06-28)
+- Added **Kanban board view** with 3 columns: Not Started, In Progress, Done
+- Implemented drag-and-drop using `@dnd-kit/core` + `@dnd-kit/sortable`
+- **📋 List / 📌 Board** toggle in the task panel header — switch between views instantly
+- Dragging a card between columns updates the task status via the existing PUT API
+- Drag overlay shows card preview while dragging (rotated, semi-transparent)
+- Column headers show task counts; empty columns display "Drop tasks here" placeholder
+- Edit/Delete buttons inside cards stop event propagation — clicking them won't trigger drag
+- Created `TaskBoard` component (3-column DndContext with SortableContext per column)
+- Created `SortableTaskCard` component (useSortable hook, CSS transform transitions)
+- Pointer sensor with 5px activation distance prevents accidental drags on click
