@@ -7,10 +7,11 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import TaskCalendar from "@/components/TaskCalendar";
 import TaskCard from "@/components/TaskCard";
+import TaskBoard from "@/components/TaskBoard";
 import TaskModal from "@/components/TaskModal";
 import DeleteConfirmDialog from "@/components/DeleteConfirmDialog";
 import StatusSummary from "@/components/StatusSummary";
-import { TaskResponse, TaskCreateInput, TaskUpdateInput } from "@/types";
+import { TaskResponse, TaskCreateInput, TaskUpdateInput, TaskStatus } from "@/types";
 import { formatDate } from "@/lib/utils";
 
 async function fetchAllTasks(status?: string, search?: string): Promise<TaskResponse[]> {
@@ -37,6 +38,8 @@ export default function DashboardPage() {
   const [deletingTask, setDeletingTask] = useState<TaskResponse | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "board">("list");
+  const [draggingTask, setDraggingTask] = useState<TaskResponse | null>(null);
 
   const dateStr = formatDate(selectedDate);
 
@@ -157,6 +160,13 @@ export default function DashboardPage() {
     [editingTask, createMutation, updateMutation]
   );
 
+  const handleStatusChange = useCallback(
+    (taskId: string, newStatus: TaskStatus) => {
+      updateMutation.mutate({ id: taskId, data: { status: newStatus } });
+    },
+    [updateMutation]
+  );
+
   const handleConfirmDelete = useCallback(() => {
     if (deletingTask) {
       deleteMutation.mutate(deletingTask.id);
@@ -210,7 +220,31 @@ export default function DashboardPage() {
                   All Tasks
                 </h2>
 
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-2">
+                  {/* View toggle */}
+                  <div className="flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+                    <button
+                      onClick={() => setViewMode("list")}
+                      className={`px-3 py-1 text-xs font-medium transition-colors ${
+                        viewMode === "list"
+                          ? "bg-primary-600 text-white"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      }`}
+                    >
+                      📋 List
+                    </button>
+                    <button
+                      onClick={() => setViewMode("board")}
+                      className={`px-3 py-1 text-xs font-medium transition-colors ${
+                        viewMode === "board"
+                          ? "bg-primary-600 text-white"
+                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      }`}
+                    >
+                      📌 Board
+                    </button>
+                  </div>
+
                   <input
                     type="text"
                     value={searchQuery}
@@ -232,7 +266,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Task list */}
+              {/* Task list / Board */}
               <div className="mt-6">
                 {isLoading ? (
                   <div className="flex justify-center py-12">
@@ -253,6 +287,16 @@ export default function DashboardPage() {
                       + Add your first task
                     </button>
                   </div>
+                ) : viewMode === "board" ? (
+                  <TaskBoard
+                    tasks={tasks}
+                    onStatusChange={handleStatusChange}
+                    onEdit={handleEditTask}
+                    onDelete={handleDeleteTask}
+                    draggingTask={draggingTask}
+                    onDragStart={setDraggingTask}
+                    onDragEnd={() => setDraggingTask(null)}
+                  />
                 ) : (
                   <div className="space-y-6">
                     {selectedDateTasks.length > 0 && (
