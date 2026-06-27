@@ -21,6 +21,12 @@
   }
 }
 
+@layer utilities {
+  .w-progress {
+    width: var(--progress-width);
+  }
+}
+
 @layer components {
   .btn-primary {
     @apply rounded-lg bg-primary-600 px-4 py-2 font-medium text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50;

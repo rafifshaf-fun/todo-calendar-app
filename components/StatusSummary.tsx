@@ -61,8 +61,8 @@ function StatusBar({
       </div>
       <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
         <div
-          className={`h-2 rounded-full ${color} transition-all duration-300`}
-          style={{ width: `${percent}%` }}
+          className={`h-2 rounded-full ${color} transition-all duration-300 w-progress`}
+          style={{ '--progress-width': `${percent}%` } as React.CSSProperties}
         />
       </div>
     </div>
