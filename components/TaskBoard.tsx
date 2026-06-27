@@ -6,7 +6,8 @@ import {
   DragEndEvent,
   DragStartEvent,
   DragOverlay,
-  closestCenter,
+  closestCorners,
+  rectIntersection,
   PointerSensor,
   useSensor,
   useSensors,
@@ -155,7 +156,7 @@ export default function TaskBoard({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={rectIntersection}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
