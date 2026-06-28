@@ -15,9 +15,11 @@ export default tseslint.config(
       "coverage/**",
       "prisma/**",
       "tmp/**",
+      ".agents/**",
       "jest.config.js",
       "next.config.js",
       "postcss.config.js",
+      "eslint.config.mjs",
     ],
   },
 
