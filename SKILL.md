@@ -2,7 +2,10 @@
 
 ## Project Overview
 
-A To-Do List & Calendar Web Application where authenticated users can manage daily tasks via an interactive calendar interface.
+A To-Do List & Calendar Web Application where authenticated users can manage daily tasks via an interactive calendar interface. Features a drag-and-drop Kanban board, modern frosted-glass UI, and 31 demo tasks across the year.
+
+**Live demo:** https://taskflow-rho-roan.vercel.app  
+**Demo account:** `demo@example.com` / `password123`
 
 ---
 
@@ -10,58 +13,74 @@ A To-Do List & Calendar Web Application where authenticated users can manage dai
 
 | Layer | Choice |
 |---|---|
-| Frontend | Next.js (App Router) + TypeScript |
-| Styling | Tailwind CSS |
+| Frontend | Next.js 16 (App Router) + TypeScript 6 |
+| Styling | Tailwind CSS 4 (CSS-first config, no `tailwind.config.js`) |
 | Backend | Next.js API Routes |
-| Database | PostgreSQL + Prisma ORM |
-| Authentication | NextAuth.js (JWT strategy) |
-| Validation | Zod |
-| Data Fetching | React Query (TanStack Query) |
-| Calendar UI | react-calendar or FullCalendar |
-| Testing | Jest + React Testing Library |
-| Containerization | Docker + docker-compose |
+| Database | PostgreSQL 16 + Prisma 7 ORM (`@prisma/adapter-pg`) |
+| Authentication | NextAuth v5 (`next-auth@5.0.0-beta.29`) — JWT strategy |
+| Validation | Zod 3 |
+| Data Fetching | TanStack React Query v5 |
+| Calendar UI | react-calendar v5 |
+| Drag & Drop | @dnd-kit/core v6 + @dnd-kit/sortable v10 |
+| Testing | Jest 29 + React Testing Library |
+| Containerization | Docker + docker-compose (Node 22 Alpine, Postgres 16 Alpine) |
+| CI/CD | GitHub Actions (4 jobs: lint, typecheck, test, build) |
+| Deployment | Vercel (hosting) + Supabase (managed PostgreSQL) |
 
 ---
 
 ## Project Structure
 
 ```
-/app
-  /api
-    /auth
-      /register/route.ts     → POST: create new user
-      /[...nextauth]/route.ts → NextAuth handler
-    /tasks
-      /route.ts              → GET (by date), POST
-      /[id]/route.ts         → PUT, DELETE
-  /(auth)
-    /login/page.tsx
-    /register/page.tsx
-  /dashboard
-    /page.tsx                → Main calendar + task list view
-  /layout.tsx
-  /middleware.ts             → Protect /dashboard routes
-
-/components
-  /calendar/
-  /tasks/
-  /ui/                       → Shared UI primitives
-
-/lib
-  /prisma.ts                 → Prisma client singleton
-  /auth.ts                   → NextAuth config
-  /utils.ts
-
-/prisma
-  /schema.prisma             → DB schema
-  /migrations/
-
-/types
-  /index.ts                  → Shared TypeScript types
-
-/tests
-  /api/
-  /components/
+├── app/
+│   ├── api/
+│   │   ├── auth/
+│   │   │   ├── register/route.ts         # POST: create user (Zod + bcrypt)
+│   │   │   └── [...nextauth]/route.ts    # NextAuth v5 handler (Credentials)
+│   │   └── tasks/
+│   │       ├── route.ts                  # GET (all tasks), POST
+│   │       └── [id]/route.ts             # PUT, DELETE (ownership verified)
+│   ├── dashboard/page.tsx                # Main dashboard (client component)
+│   ├── login/page.tsx                    # Login page
+│   ├── register/page.tsx                 # Register page
+│   ├── layout.tsx                        # Root layout
+│   ├── page.tsx                          # Landing page (hero + features)
+│   └── globals.css                       # Tailwind 4 + design tokens + animations
+├── components/
+│   ├── Navbar.tsx                        # Frosted-glass nav, dark toggle, user menu
+│   ├── TaskCalendar.tsx                  # react-calendar wrapper with dot indicators
+│   ├── TaskCard.tsx                      # Task card with icon actions, hover elevation
+│   ├── TaskBoard.tsx                     # Kanban board: DndContext + 3 SortableContexts
+│   ├── SortableTaskCard.tsx              # useSortable draggable card
+│   ├── TaskModal.tsx                     # Create/edit form modal (frosted glass)
+│   ├── StatusSummary.tsx                 # Completion % + progress bars by status
+│   ├── DeleteConfirmDialog.tsx           # Confirmation modal for deletion
+│   ├── providers.tsx                     # SessionProvider + QueryClientProvider + ThemeProvider
+│   └── theme-provider.tsx               # Dark mode context (class strategy + localStorage)
+├── lib/
+│   ├── prisma.ts                         # Prisma singleton with @prisma/adapter-pg + ssl workaround
+│   ├── auth.ts                           # NextAuth v5 config (Credentials provider, JWT callbacks)
+│   └── utils.ts                          # formatDate, parseDate, statusLabel helpers
+├── prisma/
+│   ├── schema.prisma                     # User + Task models, TaskStatus enum
+│   └── seed.ts                           # Demo data seeder (31 tasks across 2026)
+├── tests/
+│   ├── api/
+│   │   ├── register.test.ts              # Register route structure + Prisma mock checks
+│   │   └── tasks.test.ts                 # Tasks CRUD route exports + auth checks
+│   └── components/
+│       ├── TaskCard.test.tsx             # Render, click handlers, null description
+│       └── StatusSummary.test.tsx        # Labels, percentage, zero case
+├── types/
+│   ├── index.ts                          # Shared types: TaskResponse, TaskCreateInput, etc.
+│   └── next-auth.d.ts                    # Augments Session.user.id
+├── tmp/                                  # Raw SQL seed scripts for production use
+├── prisma.config.ts                      # Prisma 7 datasource URL for CLI
+├── eslint.config.mjs                     # ESLint 9 flat config (typescript-eslint, react, react-hooks)
+├── jest.config.js                        # Jest + next/jest + jsdom
+├── Dockerfile                            # Multi-stage build (Node 22 Alpine)
+├── docker-compose.yml                    # PostgreSQL 16 + App services
+└── .github/workflows/ci.yml              # CI: lint → typecheck → test → build
 ```
 
 ---
@@ -101,9 +120,10 @@ enum TaskStatus {
 
 ## Authentication Rules
 
-- All `/dashboard` routes are protected — redirect unauthenticated users to `/login`.
-- `middleware.ts` uses NextAuth's `withAuth` to guard routes automatically.
-- Every API route calls `getServerSession()` and scopes all DB queries to the current `userId`.
+- **No middleware.ts** — NextAuth v5 `auth()` middleware is incompatible with Next.js 16's Edge Runtime (`node:util/types` not available).
+- **Page-level protection:** Dashboard uses `useSession()` from `next-auth/react` with a redirect to `/login` when `status === "unauthenticated"`.
+- **API-level protection:** Every API route calls `auth()` from `@/lib/auth` and returns `401` if `session.user.id` is missing.
+- **Ownership scoping:** Every Prisma query on `Task` includes `where: { userId: session.user.id }`.
 - Passwords are hashed with `bcryptjs` (salt rounds: 12) before storing.
 
 ---
@@ -113,11 +133,16 @@ enum TaskStatus {
 | Method | Endpoint | Description | Auth Required |
 |---|---|---|---|
 | POST | `/api/auth/register` | Register new user | No |
-| POST | `/api/auth/signin` | NextAuth login | No |
-| GET | `/api/tasks?date=YYYY-MM-DD` | Get tasks by date | Yes |
+| GET/POST | `/api/auth/[...nextauth]` | NextAuth handler (sign in, session, etc.) | — |
+| GET | `/api/tasks?search=&status=` | Get all tasks for current user | Yes |
 | POST | `/api/tasks` | Create a task | Yes |
-| PUT | `/api/tasks/[id]` | Update a task | Yes |
-| DELETE | `/api/tasks/[id]` | Delete a task | Yes |
+| PUT | `/api/tasks/[id]` | Update a task (ownership verified) | Yes |
+| DELETE | `/api/tasks/[id]` | Delete a task (ownership verified) | Yes |
+
+### Query Parameters for `GET /api/tasks`
+- `status` — Filter by `NOT_STARTED`, `IN_PROGRESS`, or `DONE`
+- `search` — Search in title and description (case-insensitive, `contains` mode)
+- `date` — (Optional) Filter by YYYY-MM-DD
 
 ---
 
@@ -125,79 +150,141 @@ enum TaskStatus {
 
 ### Required
 1. User registration, login, logout
-2. Interactive calendar — click a date to view/create tasks for that day
+2. Interactive calendar (react-calendar) with task-dot indicators
 3. Full CRUD on tasks (title, description, date, status)
-4. Dashboard: calendar + task list panel + status summary (Not Started / In Progress / Done)
+4. Dashboard: calendar + **all tasks grouped by date** + status summary
 5. Tasks scoped to authenticated user only
 
 ### Bonus
-- Task filtering by status
-- Search tasks by title/description
-- Dark mode toggle
-- Responsive/mobile-friendly layout
-- Drag-and-drop task rescheduling (dnd-kit)
-- Swagger/OpenAPI documentation
-- Unit & integration tests
-- Docker support
-- Deployment (Vercel + Supabase)
+- Task filtering by status dropdown
+- Search across all tasks by title/description
+- Dark mode toggle (CSS class strategy + localStorage persistence)
+- Responsive/mobile-friendly layout (3-col grid → stacked)
+- **Kanban board** with drag-and-drop between Not Started / In Progress / Done columns (@dnd-kit)
+- **Frosted glass UI** with design tokens, skeleton loading, micro-animations
+- Docker support (Node 22 Alpine, multi-stage build)
+- GitHub Actions CI pipeline (lint → typecheck → test → build)
+- Deployed on Vercel + Supabase
+- 20 passing unit/integration tests
 
 ---
 
 ## Coding Standards
 
-- **Always use TypeScript** with strict mode enabled (`"strict": true` in tsconfig).
-- **Use Prisma** for all database queries — never raw SQL unless explicitly requested.
-- **Validate all request bodies** with Zod schemas before any DB operation.
-- **Check auth on every API route** using `getServerSession(authOptions)`.
-- **Use Tailwind CSS** for all styling — no inline styles, no CSS modules unless necessary.
-- **Always define TypeScript `interface`** for React component props.
-- **Error responses** should follow: `{ error: string, status: number }`.
-- **Environment variables** are never hardcoded — always use `.env.local`.
+- **Always use TypeScript** with strict mode enabled (`"strict": true` in tsconfig). No `any`.
+- **Use Prisma** for all database queries — never raw SQL in application code.
+- **Validate all request bodies** with Zod schemas before any DB operation. Return `400` on failure.
+- **Check auth on every API route** using `auth()` from NextAuth v5 (NOT `getServerSession`).
+- **Use Tailwind 4** for all styling — no inline styles, no CSS modules. Use `@theme` tokens.
+- **Always define TypeScript `interface`** for React component props and API request/response shapes.
+- **Error responses** follow: `{ error: string }` with appropriate HTTP status code.
+- **Async/await only** — never `.then()` chains.
+- **Environment variables** are never hardcoded — always use `.env.local` / Vercel env vars.
+- **Kebab-case** for files, **PascalCase** for components, **camelCase** for hooks/functions.
+
+---
+
+## Prisma Client Singleton (Adapter Pattern)
+
+```ts
+// lib/prisma.ts — uses @prisma/adapter-pg for direct PostgreSQL
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
+
+const createPrismaClient = () => {
+  const url = new URL(process.env.POSTGRES_PRISMA_URL ?? process.env.DATABASE_URL ?? "postgresql://user:password@localhost:5432/todoapp");
+  url.searchParams.delete("sslmode"); // Supabase self-signed cert workaround
+  const pool = new Pool({
+    connectionString: url.toString(),
+    ssl: { rejectUnauthorized: false },
+  });
+  const adapter = new PrismaPg(pool);
+  return new PrismaClient({ adapter });
+};
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+```
+
+---
+
+## NextAuth v5 Usage
+
+```ts
+// lib/auth.ts
+import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  providers: [Credentials({ ... })],
+  session: { strategy: "jwt" },
+  callbacks: {
+    jwt({ token, user }) { if (user) token.sub = user.id; return token; },
+    session({ session, token }) { if (session.user) session.user.id = token.sub!; return session; },
+  },
+});
+
+// In API routes:
+import { auth } from "@/lib/auth";
+const session = await auth();
+if (!session?.user?.id) return Response.json({ error: "Unauthorized" }, { status: 401 });
+```
 
 ---
 
 ## Environment Variables
 
 ```env
-# .env.local
 DATABASE_URL="postgresql://user:password@localhost:5432/todoapp"
 NEXTAUTH_SECRET="your-secret-here"
 NEXTAUTH_URL="http://localhost:3000"
+AUTH_TRUST_HOST="true"    # Required by NextAuth v5 on Vercel / Docker
 ```
 
----
-
-## Copilot / DeepSeek Prompt Templates
-
-Use these in VSCode Copilot Chat or DeepSeek to get accurate, context-aware code:
-
-**Generate an API route:**
-> "Refer to SKILL.md. Write the `GET /api/tasks` route that fetches tasks by `?date=` query param for the authenticated user using Prisma and Zod."
-
-**Generate a component:**
-> "Refer to SKILL.md. Create a `TaskCard` React component with a TypeScript props interface that displays title, description, date, and a status badge."
-
-**Generate the Prisma schema:**
-> "Refer to SKILL.md. Write the full Prisma schema for User and Task models with the TaskStatus enum."
-
-**Generate a test:**
-> "Refer to SKILL.md. Write a Jest integration test for the `POST /api/tasks` API route."
+On Vercel with Supabase integration, `POSTGRES_PRISMA_URL` is auto-provided and takes precedence.
 
 ---
 
-## To-Do Checklist
+## Drag & Drop Architecture
 
-### 🛠 Setup
-- [ ] `npx create-next-app@latest --typescript --tailwind`
-- [ ] Install dependencies: `prisma`, `@prisma/client`, `next-auth`, `bcryptjs`, `zod`, `react-query`
-- [ ] Configure `prisma/schema.prisma` and run `npx prisma migrate dev`
-- [ ] Set up `.env.local` with DB URL and NextAuth secret
+- **Library:** `@dnd-kit/core` + `@dnd-kit/sortable`
+- **Collision detection:** `rectIntersection` (checks if pointer is within a droppable's bounding rect)
+- **Sensors:** `PointerSensor` with 5px activation distance (prevents accidental drags on click)
+- **Components:**
+  - `TaskBoard` — `DndContext` wraps three `SortableContext` columns (vertical list strategy)
+  - `SortableTaskCard` — `useSortable` hook with CSS transform transitions
+  - `DroppableColumn` — `useDroppable` hook registers column areas as drop targets
+- **On drop:** Dragging a card to a different column calls `PUT /api/tasks/[id]` with `{ status: newStatus }`
+- **View toggle:** 📋 List / 📌 Board toggle in task panel header — no additional data fetching
 
-### 🔐 Authentication
-- [ ] `POST /api/auth/register` — hash password, create user
-- [ ] Configure NextAuth credentials provider in `/api/auth/[...nextauth]`
-- [ ] Login page (`/login`) with form
-- [ ] Register page (`/register`) with form
+---
+
+## Design System (globals.css)
+
+- **Color palette:** Indigo primary (`#6366f1`), violet accent (`#8b5cf6`)
+- **Dark mode:** `@custom-variant dark (&:where(.dark, .dark *))` — toggled via class on `<html>`
+- **Animations:** `fadeIn`, `slideUp`, `scaleIn` keyframes (150–300ms, spring easing)
+- **Skeleton loading:** `animate-shimmer` with gradient background
+- **Frosted glass:** `backdrop-blur` on navbar and modal overlays
+- **Done via `@theme` tokens** — no `tailwind.config.js`
+- **react-calendar overrides** — custom tile styles via CSS (no `!important`)
+
+---
+
+## Testing
+
+| File | Tests | Scope |
+|---|---|---|
+| `tests/api/register.test.ts` | 4 | Route exports, Prisma mock existence |
+| `tests/api/tasks.test.ts` | 9 | Auth module, Prisma ops, route exports |
+| `tests/components/TaskCard.test.tsx` | 5 | Render title/desc, edit/delete click, null desc |
+| `tests/components/StatusSummary.test.tsx` | 3 | Status labels, percentage calc, zero case |
+| **Total** | **20** | ✅ All passing in CI |
+
+Run: `npm test` or `npm run test:watch`
 - [ ] Logout button in navbar
 - [ ] `middleware.ts` protecting `/dashboard`
 

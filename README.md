@@ -118,6 +118,23 @@ The demo account has **31 sample tasks** across Jan–Dec 2026 (16 DONE, 5 IN_PR
 
 ### Deployment
 
+This app is deployed on **Vercel** with **Supabase** (PostgreSQL):
+
+```bash
+# Deploy to Vercel (connected to GitHub repo — auto-deploys on push to main)
+npx vercel --prod
+```
+
+**Required environment variables on Vercel:**
+| Variable | Source |
+|---|---|
+| `POSTGRES_PRISMA_URL` | Auto-provided by Vercel-Supabase integration |
+| `NEXTAUTH_SECRET` | Generate with `npx auth secret` |
+| `NEXTAUTH_URL` | `https://your-app.vercel.app` |
+| `AUTH_TRUST_HOST` | `true` (required by NextAuth v5 on Vercel) |
+
+**Live demo:** https://taskflow-rho-roan.vercel.app
+
 ## Project Structure
 
 ```
